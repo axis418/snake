@@ -1,6 +1,10 @@
 format binary as "com"
 org 100h
 
+ 	call prepare_screen
+	ret
+
+prepare_screen:
 	mov ax, 0B800h
 	mov ds, ax
 	mov bx, 160
