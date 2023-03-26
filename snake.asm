@@ -3,6 +3,30 @@ org 100h
 
  	call prepare_screen
 	call draw_a_snake
+main_loop:
+	mov ah, 1
+	int 16h
+	jz main_loop_l1
+	mov ah, 0
+	int 16h
+	cmp ah, 1
+	je main_loop_done
+main_loop_l1:
+	mov ax, 15
+	call sleep
+	mov ax, [snake_head]
+	mov bx, [snake_direction]
+	add ax, bx
+	mov [snake_head], ax
+	push ds
+	mov ax, 0B800h
+	mov ds, ax
+	mov bx, [snake_head]
+	mov ax, 00F58h
+	mov [ds:bx], ax
+	pop ds
+	jmp main_loop
+main_loop_done: 
 	ret
 
 snake_head: dw 13*160+20
