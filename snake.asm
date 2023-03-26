@@ -2,9 +2,15 @@ format binary as "com"
 org 100h
 
  	call prepare_screen
+	call draw_a_snake
 	ret
 
+snake_head: dw 13*160+20
+snake_tail: dw 13*160+14
+snake_direction: dw 2
+
 prepare_screen:
+	push ds
 	mov ax, 0B800h
 	mov ds, ax
 	mov bx, 160
@@ -49,4 +55,72 @@ l4:	mov [ds:bx], ax
 	jnz l4
 	mov ax, 00FBCh
 	mov [ds:bx], ax
+	pop ds
 	ret
+	
+	; BX - head
+	; CX - tail
+draw_a_snake:
+	mov bx, [snake_head]
+	mov dx, bx
+	mov cx, [snake_tail]
+	sub dx, cx
+	mov ax, 0B800h
+	push ds
+	mov ds, ax		
+	mov ax, 00F58h
+draw_a_snake_l1:	
+	mov [ds:bx], ax
+	sub bx, 2
+	sub dx, 2
+	jnz draw_a_snake_l1
+	pop ds
+	ret	
+
+	; AX - time to wait in ticks
+sleep:
+	mov cx, ax
+	call get_tick_count
+	mov di, dx
+	mov si, ax
+sleep_l2:
+	call get_tick_count
+	cmp ax, si
+	jge sleep_l1
+	mov bx, 0FFFFh
+	sub bx, si
+	add bx, ax
+	mov ax, bx
+	jmp sleep_l3
+
+sleep_l1:
+	sub ax, si
+sleep_l3:
+	cmp ax, cx
+	jl sleep_l2
+	ret
+	
+	
+
+get_tick_count:
+        push    ds        ; Preserve data segment
+        pushf		; Keep interrupt flag
+        xor    ax,ax        ; Zero
+        mov    ds,ax        ; Address BIOS data area
+        cli            ; Don't want a tick to interrupt us
+        mov    ax,[ds:46Ch]    ; Get loword of count
+        mov    dx,[ds:46Eh]    ; Get hiword of count
+        popf            ; Restore interrupt flag as provided
+        pop    ds        ; Restore data segment
+        ret            ; Return tick count in DX|AX
+
+	
+	
+	
+
+
+
+
+
+
+
