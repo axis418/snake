@@ -14,6 +14,42 @@ main_loop:
 	int 16h
 	cmp ah, 1
 	je main_loop_done
+	cmp ah, 50h ; Down
+	jne main_loop_check_up
+	mov bx, [snake_direction]
+	add bx, 160
+	jz main_loop_l1
+	mov bx, 160
+	mov [snake_direction], bx
+	jmp main_loop_l1
+main_loop_check_up:
+	cmp ah, 48h ; Up
+	jne main_loop_check_left
+	mov bx, [snake_direction]
+	add bx, 0FF60h
+	jz main_loop_l1
+	mov bx, 0FF60h
+	mov [snake_direction], bx
+	jmp main_loop_l1
+main_loop_check_left:
+	cmp ah, 4Bh
+	jne main_loop_check_right
+	mov bx, [snake_direction]
+	add bx, 0FFFEh
+	jz main_loop_l1
+	mov bx, 0FFFEh
+	mov [snake_direction], bx
+	jmp main_loop_l1
+main_loop_check_right:
+	cmp ah, 4Dh
+	jne main_loop_l1
+	mov bx, [snake_direction]
+	add bx, 2
+	jz main_loop_l1
+	mov bx, 2
+	mov [snake_direction], bx
+	jmp main_loop_l1
+
 main_loop_l1:
 	mov ax, 5
 	call sleep
@@ -23,6 +59,14 @@ main_loop_l1:
 	mov [snake_head], ax
 	mov bx, [snake_head]
 	mov ax, 00F58h
+	mov [es:bx], ax
+	
+	mov bx, [snake_tail]
+	mov cx, [snake_direction]
+	add cx, bx
+	mov [snake_tail], cx
+	mov bx, [snake_tail]
+	mov ax, 00F20h
 	mov [es:bx], ax
 	jmp main_loop
 main_loop_done:
