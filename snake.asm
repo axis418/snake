@@ -85,10 +85,10 @@ prepare_screen:
 	mov cx, 78
 	mov ax, 00FCDh
 	mov bx, 162
-l1:	mov [es:bx], ax
+@@:	mov [es:bx], ax
 	add bx, 2
 	dec cx
-	jnz l1
+	jnz @b
 
 	mov ax, 00FBBh	
 	mov [es:bx], ax
@@ -99,10 +99,10 @@ l1:	mov [es:bx], ax
 l2:	mov [es:bx], ax
 	mov dx, 78
 	mov ax, 00F20h
-l3:	add bx, 2
+@@:	add bx, 2
 	mov [es:bx], ax
 	dec dx
-	jnz l3
+	jnz @b
 	add bx, 2
 	mov ax, 00FBAh
 	mov [es:bx], ax
@@ -114,10 +114,10 @@ l3:	add bx, 2
 	mov ax, 00FCDh
 	mov cx, 78
 	mov bx, 3842
-l4:	mov [es:bx], ax
+@@:	mov [es:bx], ax
 	add bx, 2
 	dec cx
-	jnz l4
+	jnz @b
 	mov ax, 00FBCh
 	mov [es:bx], ax
 	ret
