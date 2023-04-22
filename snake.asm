@@ -143,24 +143,18 @@ sleep:
 	call get_tick_count
 	mov di, dx
 	mov si, ax
-sleep_l2:
-	call get_tick_count
+.l1:	call get_tick_count
 	cmp ax, si
-	jge sleep_l1
+	jge sleep.l2
 	mov bx, 0FFFFh
 	sub bx, si
 	add bx, ax
 	mov ax, bx
-	jmp sleep_l3
-
-sleep_l1:   
-	sub ax, si
-sleep_l3:
-	cmp ax, cx
-	jl sleep_l2
+	jmp @f
+.l2:	sub ax, si
+@@:	cmp ax, cx
+	jl sleep.l1
 	ret
-	
-	
 
 get_tick_count:
         push    ds        ; Preserve data segment
