@@ -93,7 +93,7 @@ main_loop_l1:
 	cmp ax, 00F58h
 	jz main_loop_done
 	cmp ax, 00FA2h
-	call ate_a_apple
+	jz ate_a_apple
 	mov bx, [snake_tail]
 	mov ax, [bx]
 	mov di, ax
@@ -229,7 +229,6 @@ sleep:
 	ret
 
 draw_a_apple:
-start:
 	call get_tick_count
 	mov bx, ax
 	mov si, 77
@@ -254,9 +253,15 @@ start:
 	jnz @b
 	mov ax, [es:bx]
 	cmp ax, 00F58h
-	jz start
+	jnz next
+@@:
+	add bx, 2
+	mov ax, [es:bx]
+	cmp ax, 00F58h
+	jz @b
+next:
 	mov ax, 00FA2h
-	mov [es:bx], ax 
+	mov [es:bx], ax   
 
 ate_a_apple:
 	 
