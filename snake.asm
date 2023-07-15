@@ -1,9 +1,18 @@
-format binary as "com"
+format binary as "com"                          
+include 'macro/struct.inc'
 org 100h
+
+struct snake_element
+	offs dw ?
+	next dw ?
+ends
+
         push es
 	mov ax, 0B800h
 	mov es, ax
  	call prepare_screen
+	call create_snake
+	call draw_a_apple
 	call draw_a_snake
 
 main_loop:
@@ -51,30 +60,94 @@ main_loop_check_right:
 	jmp main_loop_l1
 
 main_loop_l1:
-	mov ax, 5
+	mov ax, 4
 	call sleep
-	mov ax, [snake_head]
-	mov bx, [snake_direction]
-	add ax, bx
-	mov [snake_head], ax
+
+	;mov bx, [snake_head]
+	;mov ax, [bx]
+	;mov bx, [snake_direction]
+	;add ax, bx
+	;mov bx, [snake_head]
+	;mov [bx], ax
+	;mov bx, ax
+	;mov ax, 00F58h
+	;mov [es:bx], ax
+	;mov si, [snake_tail]
+	;mov ax, [si]
+	;mov bx, ax
+	;mov si, [snake_direction]
+	;add ax, si
+	;mov si, [snake_tail]
+	;mov [si], ax
+	;mov ax, 00F20h
+	;mov [es:bx], ax
 	mov bx, [snake_head]
-	mov ax, 00F58h
-	mov [es:bx], ax
-	
+	mov si, [snake_direction]
+	mov ax, [bx]
+	add si, ax
+	mov ax, [es:si]
+	cmp ax, 00FBAh
+	jz main_loop_done
+	cmp ax, 00FCDh
+	jz main_loop_done
+	cmp ax, 00F58h
+	jz main_loop_done
+	cmp ax, 00FA2h
+	call ate_a_apple
 	mov bx, [snake_tail]
-	mov cx, [snake_direction]
-	add cx, bx
-	mov [snake_tail], cx
-	mov bx, [snake_tail]
+	mov ax, [bx]
+	mov di, ax
 	mov ax, 00F20h
-	mov [es:bx], ax
+	mov [es:di], ax
+@@:
+	mov di, [bx + snake_element.next]
+	cmp di, 0
+	jz @f
+	mov ax, [di + snake_element.offs]
+	mov [bx], ax
+	mov bx, di 
+	jnz @b
+@@:
+	
+	mov ax, [bx]
+	mov si, [snake_direction]
+	add ax, si
+	mov [bx], ax   
+	mov si, ax
+	mov ax, 00F58h
+	mov [es:si], ax
+		
 	jmp main_loop
 main_loop_done:
 	pop es 
 	ret
 
-snake_head: dw 13*160+20
-snake_tail: dw 13*160+14
+create_snake:
+
+	mov bx, code_end
+	mov si, 13*160+14
+	mov [bx + snake_element.offs], si
+	mov [snake_tail], bx
+	mov ax, bx
+	add ax, 4
+	mov [bx + snake_element.next], ax
+	mov cx, 9
+@@:     add si, 2
+	add bx, 4
+	mov [bx + snake_element.offs], si
+	add ax, 4                                                                   
+	mov [bx + snake_element.next], ax
+	dec cx
+	jnz @b
+	mov [bx + snake_element.next], 0
+	mov [snake_head], bx
+	ret
+	
+	 
+	
+
+snake_head: dw 0
+snake_tail: dw 0
 snake_direction: dw 2
 
 prepare_screen:
@@ -125,17 +198,16 @@ l2:	mov [es:bx], ax
 	; BX - head
 	; CX - tail
 draw_a_snake:
-	mov bx, [snake_head]
-	mov dx, bx
-	mov cx, [snake_tail]
-	sub dx, cx
 	mov ax, 00F58h
-draw_a_snake_l1:	
+	mov di, [snake_tail]
+@@:	cmp di, 0
+	jz @f
+	mov bx, [di + snake_element.offs]
 	mov [es:bx], ax
-	sub bx, 2
-	sub dx, 2
-	jnz draw_a_snake_l1
-	ret	
+	mov di, [di + snake_element.next]
+	jmp @b	
+@@:	ret
+	
 	               
 	; AX - time to wait in ticks
 sleep:
@@ -156,6 +228,43 @@ sleep:
 	jl sleep.l1
 	ret
 
+draw_a_apple:
+start:
+	call get_tick_count
+	mov bx, ax
+	mov si, 77
+@@:
+	sub bx, si
+	cmp bx, si
+	jae @b
+	inc bx
+	call get_tick_count
+	mov cx, ax
+	mov si, 21
+@@:
+	sub cx, si
+	cmp cx, si
+	jae @b
+	add cx, 2
+	add bx, bx
+@@:
+	add bx, 160
+	dec cx
+	cmp cx, 0
+	jnz @b
+	mov ax, [es:bx]
+	cmp ax, 00F58h
+	jz start
+	mov ax, 00FA2h
+	mov [es:bx], ax 
+
+ate_a_apple:
+	 
+
+	
+	
+	
+
 get_tick_count:
         push    ds        ; Preserve data segment
         pushf		; Keep interrupt flag
@@ -167,6 +276,8 @@ get_tick_count:
         popf            ; Restore interrupt flag as provided
         pop    ds        ; Restore data segment
         ret            ; Return tick count in DX|AX
+
+code_end:	db 0 
 
 	
 	
