@@ -60,7 +60,7 @@ main_loop_check_right:
 	jmp main_loop_l1
 
 main_loop_l1:
-	mov ax, 4
+	mov ax, 9
 	call sleep
 
 	;mov bx, [snake_head]
@@ -93,7 +93,9 @@ main_loop_l1:
 	cmp ax, 00F58h
 	jz main_loop_done
 	cmp ax, 00FA2h
-	jz ate_a_apple
+	jnz @f
+	call ate_a_apple
+@@:
 	mov bx, [snake_tail]
 	mov ax, [bx]
 	mov di, ax
@@ -261,13 +263,29 @@ draw_a_apple:
 	jz @b
 next:
 	mov ax, 00FA2h
-	mov [es:bx], ax   
+	mov [es:bx], ax 
+	ret  
 
 ate_a_apple:
-	 
-
-	
-	
+	mov bx, [snake_head]
+	mov di, bx
+	sub di, 4
+	mov cx, [di + snake_element.offs]
+	mov si, [di + snake_element.next]
+	add si, 4
+	mov [bx + snake_element.next], si
+	mov ax, [snake_direction]
+	add cx, ax
+	add cx, ax
+	mov [si + snake_element.offs], cx
+	mov [si + snake_element.next], 0
+	mov [snake_head], si
+	mov bx, cx
+	mov ax, 00F58h
+	mov [es:bx], ax
+	call draw_a_apple
+	jmp main_loop_l1
+	ret
 	
 
 get_tick_count:
