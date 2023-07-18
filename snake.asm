@@ -61,9 +61,6 @@ main_loop_check_right:
 	ret
 
 main_loop_l1:
-	mov ax, 3
-	call sleep
-
 	;mov bx, [snake_head]
 	;mov ax, [bx]
 	;mov bx, [snake_direction]
@@ -97,7 +94,7 @@ main_loop_l1:
 	jnz @f
 	call ate_a_apple
 	call draw_a_apple
-	jmp main_loop
+	jmp sleep_here
 @@:
 	mov bx, [snake_tail]
 	mov ax, [bx]
@@ -121,6 +118,9 @@ main_loop_l1:
 	mov si, ax
 	mov ax, 00F58h
 	mov [es:si], ax
+sleep_here:
+	mov ax, 3
+	call sleep
 	jmp main_loop
 	ret	
 	
@@ -167,13 +167,13 @@ snake_tail: dw 0
 snake_direction: dw 2
 
 prepare_screen:
-	mov bx, 160
+	mov bx, 0
 	mov ax, 00FC9h	
 	mov [es:bx], ax
 
 	mov cx, 78
 	mov ax, 00FCDh
-	mov bx, 162
+	mov bx, 2
 @@:	mov [es:bx], ax
 	add bx, 2
 	dec cx
@@ -182,8 +182,8 @@ prepare_screen:
 	mov ax, 00FBBh	
 	mov [es:bx], ax
 
-	mov cx, 22
-	mov bx, 320
+	mov cx, 23
+	mov bx, 160
 	mov ax, 00FBAh   
 l2:	mov [es:bx], ax
 	mov dx, 78
@@ -209,14 +209,6 @@ l2:	mov [es:bx], ax
 	jnz @b
 	mov ax, 00FBCh
 	mov [es:bx], ax
-	xor bx, bx
-	mov ax, 00F20h
-	mov cx, 80
-@@:
-	mov [es:bx], ax
-	add bx, 2
-	dec cx
-	jnz @b
 	ret
 	
 	; BX - head
