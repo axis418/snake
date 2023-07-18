@@ -58,9 +58,10 @@ main_loop_check_right:
 	mov bx, 2
 	mov [snake_direction], bx
 	jmp main_loop_l1
+	ret
 
 main_loop_l1:
-	mov ax, 9
+	mov ax, 3
 	call sleep
 
 	;mov bx, [snake_head]
@@ -95,6 +96,8 @@ main_loop_l1:
 	cmp ax, 00FA2h
 	jnz @f
 	call ate_a_apple
+	call draw_a_apple
+	jmp main_loop
 @@:
 	mov bx, [snake_tail]
 	mov ax, [bx]
@@ -118,10 +121,21 @@ main_loop_l1:
 	mov si, ax
 	mov ax, 00F58h
 	mov [es:si], ax
-		
 	jmp main_loop
+	ret	
+	
+
 main_loop_done:
-	pop es 
+	mov ax, 00F4Ch
+	mov bx, 500
+	mov [es:bx], ax
+	mov ax, 00F4Fh
+	add bx, 2
+	mov [es:bx], ax
+	mov ax, 00F58H
+	add bx, 2
+	mov [es:bx], ax
+	pop es	 
 	ret
 
 create_snake:
@@ -131,7 +145,7 @@ create_snake:
 	mov [bx + snake_element.offs], si
 	mov [snake_tail], bx
 	mov ax, bx
-	add ax, 4
+	add ax, 4                                                
 	mov [bx + snake_element.next], ax
 	mov cx, 9
 @@:     add si, 2
@@ -195,6 +209,14 @@ l2:	mov [es:bx], ax
 	jnz @b
 	mov ax, 00FBCh
 	mov [es:bx], ax
+	xor bx, bx
+	mov ax, 00F20h
+	mov cx, 80
+@@:
+	mov [es:bx], ax
+	add bx, 2
+	dec cx
+	jnz @b
 	ret
 	
 	; BX - head
@@ -257,7 +279,7 @@ draw_a_apple:
 	cmp ax, 00F58h
 	jnz next
 @@:
-	add bx, 2
+	add bx, 10
 	mov ax, [es:bx]
 	cmp ax, 00F58h
 	jz @b
@@ -270,12 +292,11 @@ ate_a_apple:
 	mov bx, [snake_head]
 	mov di, bx
 	sub di, 4
-	mov cx, [di + snake_element.offs]
+	mov cx, [bx + snake_element.offs]
 	mov si, [di + snake_element.next]
 	add si, 4
 	mov [bx + snake_element.next], si
 	mov ax, [snake_direction]
-	add cx, ax
 	add cx, ax
 	mov [si + snake_element.offs], cx
 	mov [si + snake_element.next], 0
@@ -283,8 +304,6 @@ ate_a_apple:
 	mov bx, cx
 	mov ax, 00F58h
 	mov [es:bx], ax
-	call draw_a_apple
-	jmp main_loop_l1
 	ret
 	
 
