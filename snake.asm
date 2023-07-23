@@ -28,8 +28,20 @@ main_loop:
 	mov bx, [snake_direction]
 	add bx, 160
 	jz main_loop_l1
+	sub bx, 160
+	cmp bx, 0FFFEh
+	jnz @f
+	call draw_the_upper_left_corner
+	jmp @f 
+@@:
+	cmp bx, 2
+	jnz @f
+	call draw_the_upper_right_corner
+@@:
 	mov bx, 160
 	mov [snake_direction], bx
+	mov bx, 00FBAh
+	mov [snake_elements], bx
 	jmp main_loop_l1
 main_loop_check_up:
 	cmp ah, 48h ; Up
@@ -37,8 +49,19 @@ main_loop_check_up:
 	mov bx, [snake_direction]
 	add bx, 0FF60h
 	jz main_loop_l1
+	sub bx, 0FF60h
+	cmp bx, 0FFFEh
+	jnz @f      
+	call draw_the_lower_left_corner
+@@:
+	cmp bx, 2
+	jnz @f
+	call draw_the_lower_right_corner
+@@:
 	mov bx, 0FF60h
 	mov [snake_direction], bx
+	mov bx, 00FBAh
+	mov [snake_elements], bx
 	jmp main_loop_l1
 main_loop_check_left:
 	cmp ah, 4Bh
@@ -46,8 +69,19 @@ main_loop_check_left:
 	mov bx, [snake_direction]
 	add bx, 0FFFEh
 	jz main_loop_l1
+	sub bx, 0FFFEh
+	cmp bx, 0FF60h
+	jnz @f
+	call draw_the_upper_right_corner
+@@:
+	cmp bx, 160
+	jnz @f
+	call draw_the_lower_right_corner
+@@:
 	mov bx, 0FFFEh
 	mov [snake_direction], bx
+	mov bx, 00FCDh
+	mov [snake_elements], bx
 	jmp main_loop_l1
 main_loop_check_right:
 	cmp ah, 4Dh
@@ -55,8 +89,19 @@ main_loop_check_right:
 	mov bx, [snake_direction]
 	add bx, 2
 	jz main_loop_l1
+	sub bx, 2
+	cmp bx, 0FF60h
+	jnz @f
+	call draw_the_upper_left_corner
+@@:
+	cmp bx, 160
+	jnz @f
+	call draw_the_lower_left_corner
+@@:
 	mov bx, 2
 	mov [snake_direction], bx
+	mov bx, 00FCDh
+	mov [snake_elements], bx
 	jmp main_loop_l1
 	ret
 
@@ -116,10 +161,10 @@ main_loop_l1:
 	add ax, si
 	mov [bx], ax   
 	mov si, ax
-	mov ax, 00F58h
+	mov ax, [snake_elements]
 	mov [es:si], ax
 sleep_here:
-	mov ax, 3
+	mov ax, 1
 	call sleep
 	jmp main_loop
 	ret	
@@ -159,12 +204,13 @@ create_snake:
 	mov [snake_head], bx
 	ret
 	
-	 
+	         
 	
 
 snake_head: dw 0
 snake_tail: dw 0
 snake_direction: dw 2
+snake_elements: dw 00FCDh
 
 prepare_screen:
 	mov bx, 0
@@ -214,7 +260,7 @@ l2:	mov [es:bx], ax
 	; BX - head
 	; CX - tail
 draw_a_snake:
-	mov ax, 00F58h
+	mov ax, [snake_elements]
 	mov di, [snake_tail]
 @@:	cmp di, 0
 	jz @f
@@ -294,8 +340,44 @@ ate_a_apple:
 	mov [si + snake_element.next], 0
 	mov [snake_head], si
 	mov bx, cx
-	mov ax, 00F58h
+	mov ax, [snake_elements]
 	mov [es:bx], ax
+	ret
+
+draw_the_upper_left_corner:
+	push bx
+	mov ax, 00FC9h
+	mov bx, [snake_head]
+	mov bx, [bx]
+	mov [es:bx], ax
+	pop bx
+	ret
+
+draw_the_upper_right_corner:
+	push bx
+	mov ax, 00FBBh 
+	mov bx, [snake_head]
+	mov bx, [bx]
+	mov [es:bx], ax
+	pop bx
+	ret
+
+draw_the_lower_left_corner:
+	push bx
+	mov ax, 00FC8h
+	mov bx, [snake_head]
+	mov bx, [bx]
+	mov [es:bx], ax
+	pop bx
+	ret
+
+draw_the_lower_right_corner:
+	push bx
+	mov ax, 00FBCh
+	mov bx, [snake_head]
+	mov bx, [bx]
+	mov [es:bx], ax
+	pop bx
 	ret
 	
 
