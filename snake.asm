@@ -164,7 +164,7 @@ main_loop_l1:
 	mov ax, [snake_elements]
 	mov [es:si], ax
 sleep_here:
-	mov ax, 1
+	mov ax, 3
 	call sleep
 	jmp main_loop
 	ret	
@@ -314,13 +314,13 @@ draw_a_apple:
 	cmp cx, 0
 	jnz @b
 	mov ax, [es:bx]
-	cmp ax, 00F58h
-	jnz next
+	cmp ax, 00F20h
+	jz next
 @@:
-	add bx, 10
+	add bx, 6
 	mov ax, [es:bx]
-	cmp ax, 00F58h
-	jz @b
+	cmp ax, 00F20h
+	jnz @b
 next:
 	mov ax, 00FA2h
 	mov [es:bx], ax 
