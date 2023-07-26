@@ -301,12 +301,12 @@ draw_a_apple:
 	inc bx
 	call get_tick_count
 	mov cx, ax
-	mov si, 21
+	mov si, 22
 @@:
 	sub cx, si
 	cmp cx, si
 	jae @b
-	add cx, 2
+	add cx, 1
 	add bx, bx
 @@:
 	add bx, 160
