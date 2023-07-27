@@ -191,7 +191,7 @@ snake_direction: dw 2
 snake_elements: dw 00FCDh
 random: dw 0
 random_k1: dw 20
-random_k2: dw 120
+random_k2: dw 140
 random_k3: dw 3998
 
 prepare_screen:
