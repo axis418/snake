@@ -291,39 +291,79 @@ sleep:
 	ret
 
 draw_a_apple:
-	call get_tick_count
-	mov bx, ax
-	mov si, 77
+;	call get_tick_count
+;	mov bx, ax
+;	mov si, 77
+;@@:
+;	sub bx, si
+;	cmp bx, si
+;	jae @b
+;	inc bx
+;	call get_tick_count
+;	mov cx, ax
+;	mov si, 23
+;@@:
+;	sub cx, si
+;	cmp cx, si
+;	jae @b
+;	inc cx 
+;	add bx, bx
+;@@:
+;	add bx, 160
+;	dec cx
+;	cmp cx, 0
+;	jnz @b
+;	mov ax, [es:bx]
+;	cmp ax, 00F20h
+;	jz next
+;@@:
+;	add bx, 6
+;	mov ax, [es:bx]
+;	cmp ax, 00F20h
+;	jnz @b
+;next:
+;	mov ax, 00FA2h
+;	mov [es:bx], ax
+	xor bx, bx
+	xor cx, cx
+	mov ax, 00F20h
+start_l1:
+	cmp [es:bx], ax
+	jnz @f
+	inc cx
 @@:
-	sub bx, si
-	cmp bx, si
-	jae @b
-	inc bx
+	add bx, 2
+	cmp bx, 4000
+	jnz start_l1
 	call get_tick_count
+@@:
+	sub ax, cx
+	cmp ax, cx
+	jae @b
+	xor bx, bx
 	mov cx, ax
-	mov si, 22
-@@:
-	sub cx, si
-	cmp cx, si
-	jae @b
-	add cx, 1
-	add bx, bx
-@@:
-	add bx, 160
-	dec cx
+	mov ax, 00F20h
+start_l2:
+	cmp [es:bx], ax
+	jnz @f
 	cmp cx, 0
-	jnz @b
-	mov ax, [es:bx]
-	cmp ax, 00F20h
 	jz next
+	dec cx
 @@:
-	add bx, 6
-	mov ax, [es:bx]
-	cmp ax, 00F20h
-	jnz @b
+	mov dx, 51
+l1:
+	add bx, 2
+	dec dx
+	cmp bx, 3998
+	jle @f
+	xor bx, bx
+@@:
+	cmp dx, 0
+	jnz l1
+	jmp start_l2
 next:
 	mov ax, 00FA2h
-	mov [es:bx], ax 
+	mov [es:bx], ax	 
 	ret  
 
 ate_a_apple:
