@@ -350,9 +350,9 @@ start_l2:
 	jz next
 	dec cx
 @@:
-	mov dx, 51
+	mov dx, 21
 l1:
-	add bx, 2
+	add bx, 10
 	dec dx
 	cmp bx, 3998
 	jle @f
