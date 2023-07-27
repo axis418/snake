@@ -106,41 +106,19 @@ main_loop_check_right:
 	ret
 
 main_loop_l1:
-	;mov bx, [snake_head]
-	;mov ax, [bx]
-	;mov bx, [snake_direction]
-	;add ax, bx
-	;mov bx, [snake_head]
-	;mov [bx], ax
-	;mov bx, ax
-	;mov ax, 00F58h
-	;mov [es:bx], ax
-	;mov si, [snake_tail]
-	;mov ax, [si]
-	;mov bx, ax
-	;mov si, [snake_direction]
-	;add ax, si
-	;mov si, [snake_tail]
-	;mov [si], ax
-	;mov ax, 00F20h
-	;mov [es:bx], ax
 	mov bx, [snake_head]
 	mov si, [snake_direction]
 	mov ax, [bx]
 	add si, ax
 	mov ax, [es:si]
-	cmp ax, 00FBAh
-	jz main_loop_done
-	cmp ax, 00FCDh
-	jz main_loop_done
-	cmp ax, 00F58h
-	jz main_loop_done
 	cmp ax, 00FA2h
 	jnz @f
 	call ate_a_apple
 	call draw_a_apple
 	jmp sleep_here
 @@:
+	cmp ax, 00F20h
+	jnz main_loop_done
 	mov bx, [snake_tail]
 	mov ax, [bx]
 	mov di, ax
@@ -211,26 +189,32 @@ snake_head: dw 0
 snake_tail: dw 0
 snake_direction: dw 2
 snake_elements: dw 00FCDh
+random: dw 0
+random_k1: dw 20
+random_k2: dw 120
+random_k3: dw 3998
 
 prepare_screen:
+	call get_tick_count
+	mov [random], ax
 	mov bx, 0
-	mov ax, 00FC9h	
+	mov ax, 00FDAh	
 	mov [es:bx], ax
 
 	mov cx, 78
-	mov ax, 00FCDh
+	mov ax, 00FC4h
 	mov bx, 2
 @@:	mov [es:bx], ax
 	add bx, 2
 	dec cx
 	jnz @b
 
-	mov ax, 00FBBh	
+	mov ax, 00FBFh	
 	mov [es:bx], ax
 
 	mov cx, 23
 	mov bx, 160
-	mov ax, 00FBAh   
+	mov ax, 00FB3h   
 l2:	mov [es:bx], ax
 	mov dx, 78
 	mov ax, 00F20h
@@ -239,21 +223,21 @@ l2:	mov [es:bx], ax
 	dec dx
 	jnz @b
 	add bx, 2
-	mov ax, 00FBAh
+	mov ax, 00FB3h
 	mov [es:bx], ax
 	add bx, 2
 	dec cx
 	jnz l2
-	mov ax, 00FC8h
+	mov ax, 00FC0h
 	mov [es:bx], ax
-	mov ax, 00FCDh
+	mov ax, 00FC4h
 	mov cx, 78
 	mov bx, 3842
 @@:	mov [es:bx], ax
 	add bx, 2
 	dec cx
 	jnz @b
-	mov ax, 00FBCh
+	mov ax, 00FD9h
 	mov [es:bx], ax
 	ret
 	
@@ -291,80 +275,29 @@ sleep:
 	ret
 
 draw_a_apple:
-;	call get_tick_count
-;	mov bx, ax
-;	mov si, 77
-;@@:
-;	sub bx, si
-;	cmp bx, si
-;	jae @b
-;	inc bx
-;	call get_tick_count
-;	mov cx, ax
-;	mov si, 23
-;@@:
-;	sub cx, si
-;	cmp cx, si
-;	jae @b
-;	inc cx 
-;	add bx, bx
-;@@:
-;	add bx, 160
-;	dec cx
-;	cmp cx, 0
-;	jnz @b
-;	mov ax, [es:bx]
-;	cmp ax, 00F20h
-;	jz next
-;@@:
-;	add bx, 6
-;	mov ax, [es:bx]
-;	cmp ax, 00F20h
-;	jnz @b
-;next:
-;	mov ax, 00FA2h
-;	mov [es:bx], ax
-	xor bx, bx
-	xor cx, cx
-	mov ax, 00F20h
-start_l1:
-	cmp [es:bx], ax
-	jnz @f
-	inc cx
+start:
+	mov ax, [random]
+	mov bx, [random_k1]     ; X(n+1) = (X(n) * k1 + k2) mod k3
+	mul bx
+	mov bx, [random_k2]
+	add ax, bx
+	mov bx, [random_k3]
+	cmp ax, bx
+	jl next
 @@:
-	add bx, 2
-	cmp bx, 4000
-	jnz start_l1
-	call get_tick_count
-@@:
-	sub ax, cx
-	cmp ax, cx
+	sub ax, bx
+	cmp ax, bx
 	jae @b
-	xor bx, bx
-	mov cx, ax
-	mov ax, 00F20h
-start_l2:
-	cmp [es:bx], ax
-	jnz @f
-	cmp cx, 0
-	jz next
-	dec cx
-@@:
-	mov dx, 21
-l1:
-	add bx, 10
-	dec dx
-	cmp bx, 3998
-	jle @f
-	xor bx, bx
-@@:
-	cmp dx, 0
-	jnz l1
-	jmp start_l2
 next:
+	
+	mov [random], ax
+	mov bx, ax
+	mov ax, [es:bx]
+	cmp ax, 00F20h
+	jnz start
 	mov ax, 00FA2h
-	mov [es:bx], ax	 
-	ret  
+	mov [es:bx], ax
+	ret                             	
 
 ate_a_apple:
 	mov bx, [snake_head]
