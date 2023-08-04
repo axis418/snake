@@ -149,15 +149,6 @@ sleep_here:
 	
 
 main_loop_done:
-	mov ax, 00F4Ch
-	mov bx, 500
-	mov [es:bx], ax
-	mov ax, 00F4Fh
-	add bx, 2
-	mov [es:bx], ax
-	mov ax, 00F58H
-	add bx, 2
-	mov [es:bx], ax
 	pop es	 
 	ret
 
