@@ -10,16 +10,20 @@ ends
         push es
 	mov ax, 0B800h
 	mov es, ax
+start_here:
+	mov ax, 2
+        mov [snake_direction], ax
+	mov ax, 00FCDh
+	mov [snake_elements], ax
  	call prepare_screen
-	;call test_a_random
-	;call create_snake
-	;call draw_a_apple
-	;call draw_a_snake
+	call create_snake
+	call draw_a_apple
+	call draw_a_snake
 
 main_loop:
 	mov ah, 1
 	int 16h
-	jz main_loop_l2
+	jz main_loop_l1
 	mov ah, 0
 	int 16h
 	cmp ah, 1
@@ -28,82 +32,82 @@ main_loop:
 	jne main_loop_check_up
 	mov bx, [snake_direction]
 	add bx, 160
-	jz main_loop_l2
+	jz main_loop_l1
 	sub bx, 160
 	cmp bx, 0FFFEh
 	jnz @f
-	;call draw_the_upper_left_corner
+	call draw_the_upper_left_corner
 	jmp @f 
 @@:
 	cmp bx, 2
 	jnz @f
-	;call draw_the_upper_right_corner
+	call draw_the_upper_right_corner
 @@:
 	mov bx, 160
 	mov [snake_direction], bx
 	mov bx, 00FBAh
 	mov [snake_elements], bx
-	jmp main_loop_l2
+	jmp main_loop_l1
 main_loop_check_up:
 	cmp ah, 48h ; Up
 	jne main_loop_check_left
 	mov bx, [snake_direction]
 	add bx, 0FF60h
-	jz main_loop_l2
+	jz main_loop_l1
 	sub bx, 0FF60h
 	cmp bx, 0FFFEh
 	jnz @f      
-	;call draw_the_lower_left_corner
+	call draw_the_lower_left_corner
 @@:
 	cmp bx, 2
 	jnz @f
-	;call draw_the_lower_right_corner
+	call draw_the_lower_right_corner
 @@:
 	mov bx, 0FF60h
 	mov [snake_direction], bx
 	mov bx, 00FBAh
 	mov [snake_elements], bx
-	jmp main_loop_l2
+	jmp main_loop_l1
 main_loop_check_left:
-	cmp ah, 4Bh ;left
+	cmp ah, 4Bh
 	jne main_loop_check_right
 	mov bx, [snake_direction]
 	add bx, 0FFFEh
-	jz main_loop_l2
+	jz main_loop_l1
 	sub bx, 0FFFEh
 	cmp bx, 0FF60h
 	jnz @f
-	;call draw_the_upper_right_corner
+	call draw_the_upper_right_corner
 @@:
 	cmp bx, 160
 	jnz @f
-	;call draw_the_lower_right_corner
+	call draw_the_lower_right_corner
 @@:
 	mov bx, 0FFFEh
 	mov [snake_direction], bx
 	mov bx, 00FCDh
 	mov [snake_elements], bx
-	jmp main_loop_l2
+	jmp main_loop_l1
 main_loop_check_right:
-	cmp ah, 4Dh ;right
-	jne main_loop_l2
+	cmp ah, 4Dh
+	jne main_loop_l1
 	mov bx, [snake_direction]
 	add bx, 2
-	jz main_loop_l2
+	jz main_loop_l1
 	sub bx, 2
 	cmp bx, 0FF60h
 	jnz @f
-	;call draw_the_upper_left_corner
+	call draw_the_upper_left_corner
 @@:
 	cmp bx, 160
 	jnz @f
-	;call draw_the_lower_left_corner
+	call draw_the_lower_left_corner
 @@:
 	mov bx, 2
 	mov [snake_direction], bx
 	mov bx, 00FCDh
 	mov [snake_elements], bx
-	jmp main_loop_l2
+	jmp main_loop_l1
 	ret
 
 main_loop_l1:
@@ -147,28 +151,50 @@ sleep_here:
 	call sleep
 	jmp main_loop
 	ret	
-
-main_loop_l2:
-	mov bx, [snake_coord]
-	mov si, [snake_direction]
-	add si, bx
-	mov [snake_coord], si
-	mov ax, [es:si]
-	cmp ax, 00F20h
-	jz @f
-	jmp main_loop_done
-@@:
-	mov ax, [snake_type]
-	mov [es:si], ax
-	mov ax, 3
-	call sleep
-	jmp main_loop
-	ret
 	
 
 main_loop_done:
-	pop es 
-	ret
+	mov cx, 6
+	call write_string
+        mov ax, 00E52h
+        mov bx, 1830
+        mov [es:bx], ax
+        mov ax, 00E45h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E53h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E54h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E41h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E52h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E54h
+        add bx, 2
+        mov [es:bx], ax
+        mov ax, 00E3Fh
+        add bx, 2
+        mov [es:bx], ax
+check:
+        mov ah, 0Ch
+        mov al, 08h
+        int 21h
+        cmp al, 27
+        je finish
+        cmp al, 32
+        je start_here
+wait_here:
+        mov ax, 1
+        call sleep
+        jmp check
+finish:
+        pop es
+        ret
 
 create_snake:
 
@@ -193,12 +219,11 @@ create_snake:
 	
 	         
 	
-snake_coord: dw 13*160+14
+my_string: db "string"
 snake_head: dw 0
 snake_tail: dw 0
 snake_direction: dw 2
 snake_elements: dw 00FCDh
-snake_type: dw 00FDBh
 random: dw 0
 random_k1: dw 20
 random_k2: dw 140
@@ -210,7 +235,6 @@ prepare_screen:
 	mov bx, 0
 	mov ax, 00FDAh	
 	mov [es:bx], ax
-
 	mov cx, 78
 	mov ax, 00FC4h
 	mov bx, 2
@@ -218,10 +242,8 @@ prepare_screen:
 	add bx, 2
 	dec cx
 	jnz @b
-
 	mov ax, 00FBFh	
 	mov [es:bx], ax
-
 	mov cx, 23
 	mov bx, 160
 	mov ax, 00FB3h   
@@ -362,6 +384,21 @@ draw_the_lower_right_corner:
 	mov [es:bx], ax
 	pop bx
 	ret
+
+write_string:
+	mov di, 400
+	mov si, my_string
+write_string_l1:
+	mov ah, [si]
+	mov [es:di], ah
+	dec cx
+	cmp cx, 0
+	jz @f
+	inc si
+	add di, 2
+	jmp write_string_l1
+@@:
+	ret
 	
 
 get_tick_count:
@@ -377,14 +414,7 @@ get_tick_count:
         ret            ; Return tick count in DX|AX
 
 code_end:	db 0 
-        	
-test_a_random:
-	mov cx, 10
-@@:
-	call draw_a_apple
-	dec cx
-	jnz @b
-	ret
+
 	
 	
 	
