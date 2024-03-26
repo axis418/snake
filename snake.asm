@@ -148,7 +148,7 @@ main_loop_l1:
         mov ax, [snake_elements]
         mov [es:si], ax
 sleep_here:
-        mov ax, 1
+        mov ax, 2
         call sleep
         jmp main_loop
         ret     
