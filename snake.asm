@@ -364,7 +364,7 @@ ate_a_apple:
         mov ax, [snake_elements]
         mov [es:bx], ax
         mov ax, [score]
-        inc ax
+        add ax, 500
         mov [score], ax
         call write_a_number
         ret
@@ -427,10 +427,8 @@ write_a_number:
 	mov [es:di], ah
 	cmp al, 0
 	jz @f
-	sub di, 2
-	mov ax, [score]
-	div bl
 	and ax, 0ffh
+	sub di, 2
 	jmp @b
 @@:
         ret
